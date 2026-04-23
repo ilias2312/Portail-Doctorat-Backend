@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: doctorat-portal
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_doctorat?createDatabaseIfNotExist=true
+    username: root
+    password: Roles1234@
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  # Empêche l'erreur 500 si une liste (comme publications) est vide au début
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
+server:
+  port: 8080
