@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Soutenances</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h2 class="mb-4">🎓 Gestion des Soutenances</h2>
+
+    <table class="table table-bordered bg-white shadow">
+
+        <thead class="table-dark">
+        <tr>
+            <th>Doctorant</th>
+            <th>Date</th>
+            <th>Salle</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="s : ${soutenances}">
+
+            <!-- NOM DOCTORANT (SAFE NULL FIX) -->
+            <td th:text="${s.doctorant != null ? s.doctorant.nom + ' ' + s.doctorant.prenom : 'N/A'}"></td>
+
+            <!-- DATE SAFE -->
+            <td th:text="${s.dateSoutenance != null ? s.dateSoutenance : 'Non planifiée'}"></td>
+
+            <!-- SALLE SAFE -->
+            <td th:text="${s.salle != null ? s.salle : '-'}"></td>
+
+            <!-- STATUT -->
+            <td>
+                <span th:if="${s.statut.name() == 'DEMANDEE'}"
+                      class="badge bg-warning text-dark">EN ATTENTE</span>
+
+                <span th:if="${s.statut.name() == 'VALIDE'}"
+                      class="badge bg-success">VALIDÉ</span>
+
+                <span th:if="${s.statut.name() == 'REFUSEE'}"
+                      class="badge bg-danger">REFUSÉ</span>
+
+                <span th:if="${s.statut.name() == 'PLANIFIEE'}"
+                      class="badge bg-info">PLANIFIÉE</span>
+            </td>
+
+            <!-- ACTIONS -->
+            <td class="d-flex flex-column gap-1">
+
+                <!-- VALIDER -->
+                <a th:href="@{'/admin/soutenance/valider/' + ${s.id}}"
+                   class="btn btn-success btn-sm">
+                    Valider
+                </a>
+
+                <!-- REFUSER -->
+                <a th:href="@{'/admin/soutenance/refuser/' + ${s.id}}"
+                   class="btn btn-danger btn-sm">
+                    Refuser
+                </a>
+
+                <!-- PLANIFIER -->
+                <form th:action="@{'/admin/soutenance/planifier/' + ${s.id}}"
+                      method="post"
+                      class="d-flex flex-column gap-1 mt-1">
+
+                    <input type="datetime-local"
+                           name="date"
+                           class="form-control form-control-sm"
+                           required>
+
+                    <input type="text"
+                           name="salle"
+                           class="form-control form-control-sm"
+                           placeholder="Salle"
+                           required>
+
+                    <button class="btn btn-primary btn-sm">
+                        Planifier
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        <!-- EMPTY STATE -->
+        <tr th:if="${#lists.isEmpty(soutenances)}">
+            <td colspan="5" class="text-center text-muted p-4">
+                Aucune soutenance
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

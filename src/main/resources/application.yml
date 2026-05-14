@@ -17,10 +17,16 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
-  # Empêche l'erreur 500 si une liste (comme publications) est vide au début
   jackson:
     serialization:
       fail-on-empty-beans: false
 
 server:
   port: 8080
+
+# Ajout du mode DEBUG pour voir l'erreur de connexion précise
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

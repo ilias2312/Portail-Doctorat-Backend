@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Espace Doctorant</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .card { border: none; border-radius: 12px; }
+        .card-header { border-bottom: 1px solid #eee; font-weight: bold; }
+        .avatar { width: 60px; height: 60px; font-size: 22px; border-radius: 50%; background-color: #0d6efd; color: white; display: flex; align-items: center; justify-content: center; margin: auto; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand">🎓 EMSI - Portail Recherche</span>
+        <form th:action="@{/logout}" method="post">
+            <button class="btn btn-outline-danger btn-sm">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <!-- PROFILE -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="avatar mb-2" th:text="${d.user.prenom.substring(0,1)}"></div>
+                    <h5 class="fw-bold" th:text="${d.user.prenom + ' ' + d.user.nom}"></h5>
+                    <p class="text-muted" th:text="${d.user.email}"></p>
+                    <hr>
+                    <div class="text-start">
+                        <small class="text-secondary">Sujet de thèse :</small>
+                        <p class="fw-bold" th:text="${d.sujetThese}"></p>
+                        <small class="text-secondary">Statut :</small>
+                        <p>
+                            <span class="badge" th:text="${d.statut}"
+                                  th:classappend="${d.statut.name() == 'VALID'} ? 'bg-success' : (${d.statut.name() == 'EN_ATTENTE'} ? 'bg-warning text-dark' : 'bg-danger')">
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="col-md-8">
+            <!-- SOUTENANCE -->
+            <div class="card shadow-sm mb-4 border-success">
+                <div class="card-body text-center">
+                    <h5 class="text-success mb-3">🎓 Soutenance</h5>
+                    <p class="text-muted">200h de formation + 2 publications minimum</p>
+
+                    <!-- BOUTON DE DEMANDE -->
+                    <a th:if="${d.totalHeuresFormation >= 200 and d.publications.size() >= 2}"
+                       th:href="@{/doctorant/soutenance/demander}"
+                       class="btn btn-success btn-lg">
+                        📩 Demander soutenance
+                    </a>
+
+                    <div th:if="${d.totalHeuresFormation < 200 or d.publications.size() < 2}" class="text-danger mt-2">
+                        ❌ Vous n’êtes pas encore éligible
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAT D'AVANCEMENT (CORRIGÉ POUR ÉVITER ERREUR 500) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-primary">État d'avancement</div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4 border-end">
+                            <h6>Articles</h6>
+                            <!-- Suppression de .name() car 'type' est une String -->
+                            <p class="fw-bold" th:text="${d.publications.?[type == 'JOURNAL'].size()} + ' / 2'"></p>
+                        </div>
+                        <div class="col-4 border-end">
+                            <h6>Conférences</h6>
+                            <!-- Suppression de .name() car 'type' est une String -->
+                            <p class="fw-bold" th:text="${d.publications.?[type == 'CONFERENCE'].size()} + ' / 2'"></p>
+                        </div>
+                        <div class="col-4">
+                            <h6>Formation</h6>
+                            <p class="fw-bold" th:text="${d.totalHeuresFormation + ' / 200h'}"></p>
+                        </div>
+                    </div>
+                    <div class="progress mt-4" style="height: 18px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                             th:style="'width:' + (${d.totalHeuresFormation} * 100 / 200) + '%'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PUBLICATIONS -->
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Mes publications</span>
+                    <a th:href="@{/doctorant/publication/add}" class="btn btn-primary btn-sm">+ Ajouter</a>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr><th>Titre</th><th>Type</th><th>Rang</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${d.publications}">
+                            <td th:text="${p.titre}"></td>
+                            <td><span class="badge bg-info text-dark" th:text="${p.type}"></span></td>
+                            <td th:text="${p.rang}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(d.publications)}">
+                            <td colspan="3" class="text-center p-4 text-muted">📄 Aucune publication</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

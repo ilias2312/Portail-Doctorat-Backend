@@ -10,6 +10,7 @@
         .login-card { border: none; border-radius: 15px; max-width: 400px; width: 100%; margin: auto; }
         .btn-submit { background-color: var(--emsi-green); color: white; border: none; font-weight: bold; }
         .btn-submit:hover { background-color: #157347; }
+        .alert-error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -19,14 +20,25 @@
         <p class="text-muted mb-4 small">Identifiez-vous pour accéder à votre espace de suivi doctoral.</p>
 
         <form th:action="@{/login}" method="post">
+
+            <div th:if="${param.error}" class="alert alert-error small py-2 mb-3 text-start">
+                Email ou mot de passe incorrect.
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success small py-2 mb-3 text-start">
+                Vous avez été déconnecté.
+            </div>
+
             <div class="mb-3 text-start">
                 <label class="form-label small fw-bold">Email</label>
-                <input type="email" name="username" class="form-control" placeholder="nom@emsi.ma" required>
+                <input type="email" name="email" class="form-control" placeholder="nom@emsi.ma" required>
             </div>
+
             <div class="mb-4 text-start">
                 <label class="form-label small fw-bold">Mot de passe</label>
                 <input type="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
+
             <button type="submit" class="btn btn-submit w-100 py-2">Se connecter</button>
         </form>
 

@@ -2,124 +2,93 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - EMSI</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-dark bg-dark mb-4 p-3 shadow">
+<nav class="navbar navbar-dark bg-dark p-3 mb-4">
     <div class="container-fluid">
-        <span class="navbar-brand">🎓 Administration du Portail Doctorat</span>
-        <div class="d-flex align-items-center">
-            <a th:href="@{/admin/inscription}" class="btn btn-success me-3">
-                <i class="bi bi-person-plus"></i> Inscrire un Doctorant
-            </a>
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <button type="submit" class="btn btn-outline-danger btn-sm">Déconnexion</button>
+        <span class="navbar-brand">🎓 Portail Doctorat - Administration</span>
+        <div class="d-flex">
+            <a th:href="@{/admin/soutenances}" class="btn btn-outline-info me-2">📋 Liste Soutenances</a>
+            <a th:href="@{/admin/inscription}" class="btn btn-success me-2">➕ Ajouter Doctorant</a>
+            <form th:action="@{/logout}" method="post">
+                <button class="btn btn-outline-light">Déconnexion</button>
             </form>
         </div>
     </div>
 </nav>
 
 <div class="container">
-    <div class="row mb-4 text-center">
+    <!-- STATS -->
+    <div class="row text-center mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <h6 class="text-muted small uppercase">Total Doctorants</h6>
-                <h2 class="text-primary fw-bold" th:text="${total}">0</h2>
+            <div class="card p-3 shadow-sm">
+                <h6>Total Doctorants</h6>
+                <h2 th:text="${total}">0</h2>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <h6 class="text-muted small uppercase">Dossiers en Dérogation</h6>
-                <h2 class="text-warning fw-bold">0</h2>
+            <div class="card p-3 shadow-sm border-success">
+                <h6 class="text-success">Prêts pour Soutenance</h6>
+                <h2 class="text-success" th:text="${eligibles}">0</h2>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <h6 class="text-muted small uppercase">Prêts pour Soutenance</h6>
-                <h2 class="text-success fw-bold" th:text="${eligibles != null ? eligibles : 0}">0</h2>
+            <div class="card p-3 shadow-sm">
+                <h6>Dossiers en Dérogation</h6>
+                <h2 class="text-warning">0</h2>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-            <span>Liste des Doctorants Inscrits</span>
-            <span class="badge bg-secondary" th:text="${total} + ' au total'"></span>
-        </div>
+    <!-- TABLE -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white fw-bold">Liste des Doctorants</div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>Identité</th>
-                        <th>Sujet de Thèse</th>
-                        <th>Ancienneté</th>
-                        <th>Formation</th>
-                        <th>Soutenance</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="d : ${doctorants}">
-                        <td>
-                            <strong th:text="${d.nom + ' ' + d.prenom}"></strong><br>
-                            <small class="text-muted" th:text="${d.email}"></small>
-                        </td>
-                        <td><small class="text-truncate d-inline-block" style="max-width: 150px;" th:text="${d.sujetThese}"></small></td>
-                        <td>
-                            <span th:text="${ds.verifierStatutAnciennete(d.id)}"
-                                  th:class="${ds.verifierStatutAnciennete(d.id).contains('EXCLUS') ? 'badge bg-danger' :
-                                             (ds.verifierStatutAnciennete(d.id).contains('DÉROGATION') ? 'badge bg-warning text-dark' : 'badge bg-info')}">
-                            </span>
-                        </td>
-                        <td>
-                            <div class="progress" style="height: 8px; width: 100px; margin-bottom: 4px;">
-                                <div class="progress-bar bg-success" role="progressbar"
-                                     th:style="'width: ' + (${d.totalHeuresFormation} * 100 / 200) + '%'"></div>
-                            </div>
-                            <small class="fw-bold" th:text="${d.totalHeuresFormation} + 'h / 200h'"></small>
-                        </td>
-                        <td class="text-center">
-                            <div th:if="${ds.verifierEligibiliteSoutenance(d.id)}">
-                                <i class="bi bi-check-circle-fill text-success fs-5" title="Dossier Scientifique Conforme"></i>
-                                <div th:if="${d.dateSoutenance != null}">
-                                    <small class="badge bg-light text-dark border mt-1" th:text="${#temporals.format(d.dateSoutenance, 'dd/MM/yyyy')}"></small>
-                                </div>
-                            </div>
-                            <i th:unless="${ds.verifierEligibiliteSoutenance(d.id)}" class="bi bi-clock-history text-muted fs-5" title="En attente de publications"></i>
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group">
-                                <a th:href="@{/admin/details/{id}(id=${d.id})}" class="btn btn-sm btn-outline-primary" title="Vérifier la conformité et Planifier">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-
-                                <a th:href="@{/admin/delete/{id}(id=${d.id})}"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Attention : Cette action est irréversible. Supprimer ce doctorant ?')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(doctorants)}">
-                        <td colspan="6" class="text-center p-5 text-muted">
-                            <i class="bi bi-inbox fs-1"></i><br>Aucun doctorant inscrit pour le moment.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>Nom & Prénom</th>
+                    <th>Email</th>
+                    <th>Heures</th>
+                    <th>Éligibilité</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${doctorants}">
+                    <td th:text="${d.nom + ' ' + d.prenom}"></td>
+                    <td th:text="${d.email}"></td>
+                    <td th:text="${d.totalHeuresFormation + ' h'}"></td>
+                    <td>
+                        <span th:if="${d.totalHeuresFormation >= 200}" class="badge bg-success">ÉLIGIBLE</span>
+                        <span th:if="${d.totalHeuresFormation < 200}" class="badge bg-danger">NON ÉLIGIBLE</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <!-- MODIFIER -->
+                            <a th:href="@{'/admin/doctorant/edit/' + ${d.id}}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <!-- SUPPRIMER -->
+                            <a th:href="@{'/admin/doctorant/delete/' + ${d.id}}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Supprimer ce doctorant ?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(doctorants)}">
+                    <td colspan="5" class="text-center p-4 text-muted">Aucun doctorant enregistré.</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<footer class="text-center mt-5 mb-4 text-muted small">
-    &copy; 2026 EMSI - Système de Gestion des Thèses (PFA)
-</footer>
-
 </body>
 </html>

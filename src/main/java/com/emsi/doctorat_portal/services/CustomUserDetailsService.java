@@ -19,19 +19,26 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // 1. Recherche de l'utilisateur
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + email));
 
-        // On récupère le rôle exact de la base (ex: "ADMINISTRATEUR")
+        // 2. Récupération propre du rôle
+        // Si user.getRole() est une Enum, on prend son nom (ex: "ENCADRANT")
         String roleName = user.getRole().name();
 
-        System.out.println("DEBUG - Tentative de connexion: " + email);
-        System.out.println("DEBUG - Rôle trouvé en base: " + roleName);
+        // 3. Normalisation du rôle pour Spring Security
+        // Il est crucial que le rôle commence par "ROLE_" pour utiliser .hasRole() dans la config
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+
+        // Debug optionnel pour vérifier en console pendant le développement
+        // System.out.println("Utilisateur connecté : " + email + " avec le rôle : " + roleName);
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
-                .password(user.getPassword())
-                // On utilise authorities() pour envoyer la chaîne exacte "ADMINISTRATEUR"
+                .password(user.getPassword()) // Doit être un hash BCrypt valide en base
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority(roleName)))
                 .build();
     }
