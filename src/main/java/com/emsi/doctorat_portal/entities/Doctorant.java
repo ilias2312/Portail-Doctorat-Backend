@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "doctorants")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Doctorant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,18 +25,30 @@ public class Doctorant {
     @Enumerated(EnumType.STRING)
     private StatutDossier statut;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "encadrant_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User encadrant;
 
-    @OneToMany(mappedBy = "doctorant", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "doctorant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Publication> publications;
 
-    // Cette ligne corrige l'erreur rouge getSoutenance() dans le service
-    @OneToOne(mappedBy = "doctorant", cascade = CascadeType.ALL)
+    // ✅ Added Document relationship
+    @OneToMany(mappedBy = "doctorant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude @EqualsAndHashCode.Exclude
+    private List<Document> documents;
+
+    @OneToOne(mappedBy = "doctorant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Soutenance soutenance;
 }

@@ -2,80 +2,648 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <title>Administration | Portail Doctorat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --sidebar-w: 240px;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+            --ink: #111827;
+            --ink2: #374151;
+            --ink3: #6b7280;
+            --border: #e5e7eb;
+            --green: #059669;
+            --green-bg: #ecfdf5;
+            --green-text: #065f46;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --red-text: #991b1b;
+            --yellow: #d97706;
+            --yellow-bg: #fffbeb;
+            --yellow-text: #92400e;
+            --blue: #2563eb;
+            --blue-bg: #eff6ff;
+            --blue-text: #1e40af;
+            --sidebar-bg: #111827;
+            --sidebar-text: #9ca3af;
+            --sidebar-active: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            display: flex;
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            min-height: 100vh;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--green);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            color: var(--sidebar-text);
+            font-weight: 400;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #4b5563;
+            padding: 0 8px;
+            margin: 16px 0 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.07);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i { font-size: 16px; width: 20px; }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .logout-btn:hover { background: rgba(239,68,68,0.1); }
+
+        /* MAIN */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title { font-size: 18px; font-weight: 600; color: var(--ink); }
+        .topbar-sub { font-size: 12px; color: var(--ink3); margin-top: 1px; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        .btn-primary-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--ink);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn-primary-custom:hover { opacity: 0.85; color: white; }
+
+        .btn-outline-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-outline-custom:hover { background: var(--bg); color: var(--ink); }
+
+        /* CONTENT */
+        .content { padding: 28px 32px; }
+
+        /* STAT CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ink3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+
+        .stat-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .stat-trend {
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* ALERT */
+        .alert-custom {
+            background: var(--red-bg);
+            border: 1px solid #fecaca;
+            border-left: 4px solid var(--red);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .alert-icon { color: var(--red); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .alert-title { font-size: 14px; font-weight: 600; color: var(--red-text); margin-bottom: 6px; }
+        .alert-list { list-style: none; }
+        .alert-list li { font-size: 13px; color: var(--red-text); padding: 2px 0; }
+        .alert-list li::before { content: '·'; margin-right: 8px; }
+
+        /* SECTION CARD */
+        .section-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .section-title i { font-size: 16px; }
+
+        .section-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+
+        .badge-warning { background: var(--yellow-bg); color: var(--yellow-text); }
+        .badge-neutral { background: var(--bg); color: var(--ink3); }
+
+        /* TABLE */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 10px 16px;
+            text-align: left;
+            background: #f9fafb;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--ink2);
+            font-size: 13px;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover { background: #f9fafb; }
+
+        .td-name { font-weight: 500; color: var(--ink); }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: var(--ink3);
+            font-size: 13px;
+        }
+
+        .empty-state i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+        /* BADGES */
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+
+        .badge-success { background: var(--green-bg); color: var(--green-text); }
+        .badge-danger { background: var(--red-bg); color: var(--red-text); }
+        .badge-pending { background: var(--yellow-bg); color: var(--yellow-text); }
+        .badge-info { background: var(--blue-bg); color: var(--blue-text); }
+        .badge-gray { background: #f3f4f6; color: var(--ink3); }
+
+        /* ACTION BUTTONS */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .action-btn:hover { opacity: 0.8; }
+        .btn-success-sm { background: var(--green-bg); color: var(--green-text); }
+        .btn-danger-sm { background: var(--red-bg); color: var(--red-text); }
+        .btn-edit-sm { background: #fff8e6; color: #92400e; }
+        .btn-del-sm { background: var(--red-bg); color: var(--red-text); }
+
+        .actions-cell { display: flex; align-items: center; gap: 6px; }
+
+        /* AVATAR */
+        .avatar-sm {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ink2);
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark bg-dark p-3 mb-4">
-    <div class="container-fluid">
-        <span class="navbar-brand">🎓 Portail Doctorat - Administration</span>
-        <div class="d-flex">
-            <a th:href="@{/admin/soutenances}" class="btn btn-outline-info me-2">📋 Liste Soutenances</a>
-            <a th:href="@{/admin/inscription}" class="btn btn-success me-2">➕ Ajouter Doctorant</a>
-            <form th:action="@{/logout}" method="post">
-                <button class="btn btn-outline-light">Déconnexion</button>
-            </form>
-        </div>
-    </div>
-</nav>
-
-<div class="container">
-    <!-- STATS -->
-    <div class="row text-center mb-4">
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm">
-                <h6>Total Doctorants</h6>
-                <h2 th:text="${total}">0</h2>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm border-success">
-                <h6 class="text-success">Prêts pour Soutenance</h6>
-                <h2 class="text-success" th:text="${eligibles}">0</h2>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm">
-                <h6>Dossiers en Dérogation</h6>
-                <h2 class="text-warning">0</h2>
-            </div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <div>
+            <div class="logo-text">Portail Doctorat</div>
+            <div class="logo-sub">Administration · EMSI</div>
         </div>
     </div>
 
-    <!-- TABLE -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white fw-bold">Liste des Doctorants</div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-dark">
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="#" class="nav-item active">
+            <i class="bi bi-grid-1x2"></i> Tableau de bord
+        </a>
+        <a th:href="@{/admin/soutenances}" class="nav-item">
+            <i class="bi bi-clipboard-check"></i> Soutenances
+        </a>
+
+        <div class="nav-section-label">Gestion</div>
+        <a th:href="@{/admin/inscription}" class="nav-item">
+            <i class="bi bi-person-plus"></i> Ajouter doctorant
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <button class="logout-btn" type="submit">
+                <i class="bi bi-box-arrow-left" style="font-size:16px;"></i> Déconnexion
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div>
+            <div class="topbar-title">Tableau de bord</div>
+            <div class="topbar-sub">Vue d'ensemble du cycle doctoral</div>
+        </div>
+        <div class="topbar-actions">
+            <a th:href="@{/admin/soutenances}" class="btn-outline-custom">
+                <i class="bi bi-clipboard-check"></i> Soutenances
+            </a>
+            <a th:href="@{/admin/inscription}" class="btn-primary-custom">
+                <i class="bi bi-plus-lg"></i> Ajouter doctorant
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-label">Total doctorants</div>
+                    <div class="stat-icon" style="background:#f3f4f6; color:#6b7280;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-num" th:text="${total}">0</div>
+                <div class="stat-trend" style="color:var(--ink3);">inscrits au total</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-label">Prêts soutenance</div>
+                    <div class="stat-icon" style="background:var(--green-bg); color:var(--green);">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-num" style="color:var(--green);" th:text="${eligibles}">0</div>
+                <div class="stat-trend" style="color:var(--green);">critères remplis</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-label">En dérogation</div>
+                    <div class="stat-icon" style="background:var(--yellow-bg); color:var(--yellow);">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-num" style="color:var(--yellow);" th:text="${enDerogation}">0</div>
+                <div class="stat-trend" style="color:var(--yellow);">au-delà de 3 ans</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-label">Exclus (+6 ans)</div>
+                    <div class="stat-icon" style="background:var(--red-bg); color:var(--red);">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-num" style="color:var(--red);" th:text="${exclus != null ? exclus.size() : 0}">0</div>
+                <div class="stat-trend" style="color:var(--red);">délai dépassé</div>
+            </div>
+        </div>
+
+        <!-- ALERTE EXCLUS -->
+        <div th:if="${exclus != null and not #lists.isEmpty(exclus)}" class="alert-custom">
+            <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+            <div>
+                <div class="alert-title">Doctorants ayant dépassé la durée maximale de 6 ans</div>
+                <ul class="alert-list">
+                    <li th:each="d : ${exclus}"
+                        th:text="${d.nom + ' ' + d.prenom + ' — inscrit le ' + d.dateInscriptionInitiale}"></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- DOSSIERS EN ATTENTE ADMIN -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="bi bi-hourglass-split" style="color:var(--yellow);"></i>
+                    Dossiers en attente de validation
+                </div>
+                <span class="section-badge badge-warning">
+                    <span th:text="${enAttenteAdmin != null ? enAttenteAdmin.size() : 0}">0</span> en attente
+                </span>
+            </div>
+
+            <div th:if="${enAttenteAdmin == null or #lists.isEmpty(enAttenteAdmin)}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                Aucun dossier en attente de validation
+            </div>
+
+            <table th:if="${enAttenteAdmin != null and not #lists.isEmpty(enAttenteAdmin)}" class="data-table">
+                <thead>
+                <tr>
+                    <th>Doctorant</th>
+                    <th>Email</th>
+                    <th>Sujet de thèse</th>
+                    <th>Date inscription</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${enAttenteAdmin}">
+                    <td>
+                        <span class="avatar-sm"
+                              th:text="${d.nom != null and d.nom.length() > 0 ? d.nom.substring(0,1).toUpperCase() : '?'}"></span>
+                        <span class="td-name" th:text="${d.nom + ' ' + d.prenom}"></span>
+                    </td>
+                    <td th:text="${d.email}"></td>
+                    <td th:text="${d.sujetThese}"></td>
+                    <td th:text="${d.dateInscriptionInitiale != null ? d.dateInscriptionInitiale : 'N/A'}"></td>
+                    <td>
+                        <div class="actions-cell">
+                            <a th:href="@{'/admin/dossier/valider/' + ${d.id}}" class="action-btn btn-success-sm">
+                                <i class="bi bi-check-lg"></i> Valider
+                            </a>
+                            <a th:href="@{'/admin/dossier/rejeter/' + ${d.id}}"
+                               class="action-btn btn-danger-sm"
+                               onclick="return confirm('Rejeter ce dossier ?')">
+                                <i class="bi bi-x-lg"></i> Rejeter
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- LISTE DOCTORANTS -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="bi bi-people-fill" style="color:var(--blue);"></i>
+                    Liste des doctorants
+                </div>
+                <span class="section-badge badge-neutral" th:text="${total} + ' au total'">0 au total</span>
+            </div>
+
+            <table class="data-table">
+                <thead>
                 <tr>
                     <th>Nom & Prénom</th>
                     <th>Email</th>
-                    <th>Heures</th>
+                    <th>Formation</th>
+                    <th>Statut</th>
+                    <th>Ancienneté</th>
                     <th>Éligibilité</th>
-                    <th class="text-center">Actions</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="d : ${doctorants}">
-                    <td th:text="${d.nom + ' ' + d.prenom}"></td>
-                    <td th:text="${d.email}"></td>
-                    <td th:text="${d.totalHeuresFormation + ' h'}"></td>
                     <td>
-                        <span th:if="${d.totalHeuresFormation >= 200}" class="badge bg-success">ÉLIGIBLE</span>
-                        <span th:if="${d.totalHeuresFormation < 200}" class="badge bg-danger">NON ÉLIGIBLE</span>
+                        <span class="avatar-sm"
+                              th:text="${d.nom != null and d.nom.length() > 0 ? d.nom.substring(0,1).toUpperCase() : '?'}"></span>
+                        <span class="td-name" th:text="${d.nom + ' ' + d.prenom}"></span>
                     </td>
-                    <td class="text-center">
-                        <div class="btn-group">
-                            <!-- MODIFIER -->
-                            <a th:href="@{'/admin/doctorant/edit/' + ${d.id}}" class="btn btn-warning btn-sm">
+                    <td th:text="${d.email != null ? d.email : '—'}"></td>
+                    <td>
+                        <span th:text="${d.totalHeuresFormation + 'h'}"></span>
+                        <span style="color:var(--ink3); font-size:11px;">/200h</span>
+                    </td>
+                    <td>
+                        <span class="badge-pill"
+                              th:classappend="${d.statut != null and d.statut.name() == 'VALIDE_ADMIN'} ? 'badge-success' :
+                                             (${d.statut != null and d.statut.name() == 'REJETE'} ? 'badge-danger' :
+                                             (${d.statut != null and d.statut.name() == 'EN_ATTENTE_ADMIN'} ? 'badge-pending' : 'badge-gray'))"
+                              th:text="${d.statut != null ? d.statut : 'N/A'}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${ds.verifierStatutAnciennete(d.id)}"
+                              th:style="${ds.verifierStatutAnciennete(d.id) == 'EXCLUS'} ? 'color:var(--red); font-weight:600;' :
+                                        (${ds.verifierStatutAnciennete(d.id) == 'DÉROGATION REQUISE'} ? 'color:var(--yellow); font-weight:600;' : 'color:var(--green);')">
+                        </span>
+                    </td>
+                    <td>
+                        <span th:if="${ds.verifierEligibiliteSoutenance(d.id)}" class="badge-pill badge-success">
+                            <i class="bi bi-check-circle-fill" style="font-size:10px;"></i> Éligible
+                        </span>
+                        <span th:if="${not ds.verifierEligibiliteSoutenance(d.id)}" class="badge-pill badge-danger">
+                            <i class="bi bi-x-circle-fill" style="font-size:10px;"></i> Non éligible
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <a th:href="@{'/admin/doctorant/edit/' + ${d.id}}" class="action-btn btn-edit-sm">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <!-- SUPPRIMER -->
                             <a th:href="@{'/admin/doctorant/delete/' + ${d.id}}"
-                               class="btn btn-danger btn-sm"
+                               class="action-btn btn-del-sm"
                                onclick="return confirm('Supprimer ce doctorant ?')">
                                 <i class="bi bi-trash"></i>
                             </a>
@@ -83,12 +651,19 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(doctorants)}">
-                    <td colspan="5" class="text-center p-4 text-muted">Aucun doctorant enregistré.</td>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="bi bi-people"></i>
+                            Aucun doctorant enregistré
+                        </div>
+                    </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>
+
 </body>
 </html>

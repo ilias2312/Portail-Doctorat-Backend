@@ -1,7 +1,10 @@
 package com.emsi.doctorat_portal.config;
 
+import com.emsi.doctorat_portal.services.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -13,9 +16,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder builder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder
+                .userDetailsService(customUserDetailsService)
+                .passwordEncoder(passwordEncoder());
+        return builder.build();
     }
 
     @Bean
@@ -35,14 +54,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Pages publiques
-                        .requestMatchers("/", "/login", "/error").permitAll()
-
-                        // Accès par rôles (hasRole cherche automatiquement le préfixe ROLE_)
+                        // ✅ Added /document/telecharger/** to public routes
+                        .requestMatchers("/", "/login", "/register", "/document/telecharger/**", "/error").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMINISTRATEUR")
                         .requestMatchers("/encadrant/**").hasRole("ENCADRANT")
                         .requestMatchers("/doctorant/**").hasAnyRole("DOCTORANT", "ADMINISTRATEUR")
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -51,7 +67,6 @@ public class SecurityConfig {
                         .usernameParameter("email")
                         .successHandler((request, response, authentication) -> {
                             String role = authentication.getAuthorities().toString();
-
                             if (role.contains("ROLE_ADMINISTRATEUR")) {
                                 response.sendRedirect("/admin/dashboard");
                             } else if (role.contains("ROLE_ENCADRANT")) {

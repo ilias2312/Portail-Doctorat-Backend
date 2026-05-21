@@ -11,7 +11,7 @@
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
         <span class="navbar-brand mb-0 h1">Portail Doctorat - EMSI</span>
-        <div class="d-flex">
+        <div class="d-flex align-items-center">
             <span class="navbar-text me-3" th:text="'Pr. ' + ${encadrantNom}"></span>
             <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">Déconnexion</a>
         </div>
@@ -19,8 +19,9 @@
 </nav>
 
 <div class="container">
-    <!-- Section 1 : Validation des inscriptions (Module 2) -->
-    <div class="card shadow-sm mb-5">
+
+    <!-- SECTION 1 : Dossiers en attente d'avis (Réinscription) -->
+    <div class="card shadow-sm mb-4">
         <div class="card-header bg-warning text-dark d-flex align-items-center">
             <i class="bi bi-person-check-fill me-2"></i>
             <h5 class="mb-0">Dossiers en attente d'avis (Réinscription)</h5>
@@ -34,6 +35,7 @@
                 <tr>
                     <th>Doctorant</th>
                     <th>Sujet de Thèse</th>
+                    <th>Ancienneté</th>
                     <th class="text-center">Actions</th>
                 </tr>
                 </thead>
@@ -41,6 +43,11 @@
                 <tr th:each="d : ${dossiersAValider}">
                     <td th:text="${d.nom} + ' ' + ${d.prenom}"></td>
                     <td th:text="${d.sujetThese}"></td>
+                    <td>
+                        <span th:if="${d.dateInscriptionInitiale != null}"
+                              th:text="${d.dateInscriptionInitiale}"></span>
+                        <span th:if="${d.dateInscriptionInitiale == null}" class="text-muted">N/A</span>
+                    </td>
                     <td class="text-center">
                         <form th:action="@{/encadrant/valider-inscription}" method="post" class="d-inline">
                             <input type="hidden" name="id" th:value="${d.id}">
@@ -58,54 +65,158 @@
         </div>
     </div>
 
-    <!-- Section 2 : Suivi des Doctorants & Soutenances (Module 3) -->
-    <div class="card shadow-sm">
+    <!-- SECTION 2 : Mes Doctorants suivis -->
+    <div class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white d-flex align-items-center">
             <i class="bi bi-mortarboard-fill me-2"></i>
             <h5 class="mb-0">Mes Doctorants suivis</h5>
         </div>
         <div class="card-body">
+            <div th:if="${#lists.isEmpty(doctorants)}" class="text-center py-3">
+                <p class="text-muted mb-0">Aucun doctorant assigné pour le moment.</p>
+            </div>
             <div class="row">
                 <div th:each="doc : ${doctorants}" class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-0 shadow-sm border-top border-primary border-4">
+                    <div class="card h-100 border-0 shadow-sm border-top border-4"
+                         th:classappend="${doc.statut != null and doc.statut.name() == 'VALIDE'} ? 'border-success' : 'border-primary'">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <h6 class="card-title fw-bold" th:text="${doc.nom} + ' ' + ${doc.prenom}"></h6>
-                                <span class="badge bg-info text-dark" th:text="${doc.statut}"></span>
-                            </div>
-                            <p class="small text-muted mb-3" th:text="${doc.sujetThese}"></p>
 
+                            <!-- En-tête doctorant -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title fw-bold mb-0" th:text="${doc.nom} + ' ' + ${doc.prenom}"></h6>
+                                <span class="badge"
+                                      th:classappend="${doc.statut != null and doc.statut.name() == 'VALIDE'} ? 'bg-success' : (${doc.statut != null and doc.statut.name() == 'REJETE'} ? 'bg-danger' : 'bg-warning text-dark')"
+                                      th:text="${doc.statut}"></span>
+                            </div>
+                            <p class="small text-muted mb-2" th:text="${doc.sujetThese}"></p>
+                            <p class="small text-muted mb-3">
+                                <i class="bi bi-envelope"></i>
+                                <span th:text="${doc.email}"></span>
+                            </p>
+
+                            <!-- Ancienneté -->
+                            <div class="mb-2">
+                                <small class="text-muted">Date d'inscription :</small>
+                                <small class="d-block fw-bold" th:text="${doc.dateInscriptionInitiale != null ? doc.dateInscriptionInitiale : 'Non définie'}"></small>
+                            </div>
+
+                            <!-- Progression Formation -->
                             <div class="mb-3">
-                                <small class="text-muted">Progression Formation :</small>
-                                <div class="progress mt-1" style="height: 10px;">
-                                    <div class="progress-bar" role="progressbar"
-                                         th:style="'width: ' + (${doc.totalHeuresFormation} * 100 / 200) + '%;'"
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">Formation doctorale :</small>
+                                    <small th:text="${doc.totalHeuresFormation} + '/200h'"
+                                           th:classappend="${doc.totalHeuresFormation >= 200} ? 'text-success fw-bold' : 'text-danger'"></small>
+                                </div>
+                                <div class="progress mt-1" style="height: 8px;">
+                                    <div class="progress-bar"
+                                         th:classappend="${doc.totalHeuresFormation >= 200} ? 'bg-success' : 'bg-warning'"
+                                         role="progressbar"
+                                         th:style="'width: ' + ${doc.totalHeuresFormation > 200 ? 100 : doc.totalHeuresFormation * 100 / 200} + '%;'"
                                          th:aria-valuenow="${doc.totalHeuresFormation}" aria-valuemin="0" aria-valuemax="200">
                                     </div>
                                 </div>
-                                <small class="text-end d-block" th:text="${doc.totalHeuresFormation} + '/200h'"></small>
+                            </div>
+
+                            <!-- Publications -->
+                            <div class="mb-3">
+                                <small class="text-muted fw-bold">Publications :</small>
+                                <div th:if="${doc.publications != null and not #lists.isEmpty(doc.publications)}" class="mt-1">
+                                    <div th:each="pub : ${doc.publications}" class="d-flex align-items-center mb-1">
+                                        <span class="badge me-1"
+                                              th:classappend="${pub.type == 'JOURNAL'} ? 'bg-primary' : 'bg-secondary'"
+                                              th:text="${pub.type}"></span>
+                                        <span class="badge me-1"
+                                              th:if="${pub.rang != null}"
+                                              th:classappend="${pub.rang == 'Q1' or pub.rang == 'Q2'} ? 'bg-success' : 'bg-light text-dark'"
+                                              th:text="${pub.rang}"></span>
+                                        <small class="text-truncate" th:text="${pub.titre}"></small>
+                                    </div>
+                                </div>
+                                <div th:if="${doc.publications == null or #lists.isEmpty(doc.publications)}">
+                                    <small class="text-muted fst-italic">Aucune publication</small>
+                                </div>
+                            </div>
+
+                            <!-- Éligibilité soutenance -->
+                            <div class="alert mb-3 py-2 px-3"
+                                 th:classappend="${eligibiliteMap != null and eligibiliteMap[doc.id]} ? 'alert-success' : 'alert-warning'">
+                                <small>
+                                    <i class="bi me-1"
+                                       th:classappend="${eligibiliteMap != null and eligibiliteMap[doc.id]} ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+                                    <span th:text="${eligibiliteMap != null and eligibiliteMap[doc.id]} ? 'Éligible à la soutenance' : 'Prérequis non remplis'"></span>
+                                </small>
+                            </div>
+
+                            <!-- Statut soutenance -->
+                            <div th:if="${doc.soutenance != null}" class="mb-3">
+                                <small class="text-muted fw-bold">Soutenance :</small>
+                                <div class="mt-1">
+                                    <span class="badge bg-info text-dark" th:text="${doc.soutenance.statut}"></span>
+                                    <div th:if="${doc.soutenance.dateSoutenance != null}">
+                                        <small><i class="bi bi-calendar"></i> <span th:text="${doc.soutenance.dateSoutenance}"></span></small>
+                                    </div>
+                                    <div th:if="${doc.soutenance.salle != null}">
+                                        <small><i class="bi bi-geo-alt"></i> <span th:text="${doc.soutenance.salle}"></span></small>
+                                    </div>
+                                </div>
                             </div>
 
                             <hr>
 
-                            <!-- Formulaire de proposition de Jury -->
+                            <!-- Proposition de jury -->
                             <form th:action="@{/encadrant/proposer-jury}" method="post">
                                 <input type="hidden" name="doctorantId" th:value="${doc.id}">
                                 <div class="mb-2">
-                                    <label class="form-label small fw-bold">Proposition Jury :</label>
+                                    <label class="form-label small fw-bold">
+                                        <i class="bi bi-people-fill"></i> Proposition Jury :
+                                    </label>
                                     <textarea name="proposition" class="form-control form-control-sm" rows="2"
-                                              placeholder="Noms des rapporteurs et examinateurs..."></textarea>
+                                              placeholder="Noms des rapporteurs et examinateurs..."
+                                              th:text="${doc.soutenance != null ? doc.soutenance.propositionJury : ''}"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-outline-primary btn-sm w-100">
                                     <i class="bi bi-send"></i> Soumettre Jury
                                 </button>
                             </form>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- SECTION 3 : Demandes de soutenance en attente de validation jury -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white d-flex align-items-center">
+            <i class="bi bi-clipboard-check-fill me-2"></i>
+            <h5 class="mb-0">Demandes de Soutenance à traiter</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${soutenancesEnAttente == null or #lists.isEmpty(soutenancesEnAttente)}" class="text-center py-3">
+                <p class="text-muted mb-0">Aucune demande de soutenance en attente.</p>
+            </div>
+            <table th:if="${soutenancesEnAttente != null and not #lists.isEmpty(soutenancesEnAttente)}" class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Doctorant</th>
+                    <th>Sujet</th>
+                    <th>Statut</th>
+                    <th>Jury proposé</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${soutenancesEnAttente}">
+                    <td th:text="${s.doctorant.nom} + ' ' + ${s.doctorant.prenom}"></td>
+                    <td th:text="${s.doctorant.sujetThese}"></td>
+                    <td><span class="badge bg-warning text-dark" th:text="${s.statut}"></span></td>
+                    <td th:text="${s.propositionJury != null ? s.propositionJury : 'Non soumis'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

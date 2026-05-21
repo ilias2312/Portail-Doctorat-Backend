@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -19,26 +20,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1. Recherche de l'utilisateur
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + email));
 
-        // 2. Récupération propre du rôle
-        // Si user.getRole() est une Enum, on prend son nom (ex: "ENCADRANT")
-        String roleName = user.getRole().name();
+        System.out.println("=== DEBUG ===");
+        System.out.println("Email trouvé : " + user.getEmail());
+        System.out.println("Password hash en base : " + user.getPassword());
+        System.out.println("Role : " + user.getRole());
 
-        // 3. Normalisation du rôle pour Spring Security
-        // Il est crucial que le rôle commence par "ROLE_" pour utiliser .hasRole() dans la config
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        boolean match = encoder.matches("123456", user.getPassword());
+        System.out.println("Test manuel 123456 match : " + match);
+        System.out.println("=============");
+
+        String roleName = user.getRole().name();
         if (!roleName.startsWith("ROLE_")) {
             roleName = "ROLE_" + roleName;
         }
 
-        // Debug optionnel pour vérifier en console pendant le développement
-        // System.out.println("Utilisateur connecté : " + email + " avec le rôle : " + roleName);
-
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
-                .password(user.getPassword()) // Doit être un hash BCrypt valide en base
+                .password(user.getPassword())
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority(roleName)))
                 .build();
     }

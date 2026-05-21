@@ -5,6 +5,7 @@ import com.emsi.doctorat_portal.entities.Publication;
 import com.emsi.doctorat_portal.entities.User;
 import com.emsi.doctorat_portal.repositories.UserRepository;
 import com.emsi.doctorat_portal.services.DoctoratService;
+import com.emsi.doctorat_portal.services.DocumentService; // ✅ Import added
 import com.emsi.doctorat_portal.services.SoutenanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,7 @@ public class DoctorantController {
     private final DoctoratService doctoratService;
     private final UserRepository userRepository;
     private final SoutenanceService soutenanceService;
+    private final DocumentService documentService; // ✅ Injected
 
     // ================= DASHBOARD =================
     @GetMapping({"/dashboard", "/index"})
@@ -30,6 +32,7 @@ public class DoctorantController {
 
         Doctorant d = user.getDoctorant();
         model.addAttribute("d", d);
+        model.addAttribute("documents", documentService.getDocuments(d.getId())); // ✅ Added
         return "doctorant/dashboard";
     }
 
@@ -50,15 +53,13 @@ public class DoctorantController {
         return "redirect:/doctorant/dashboard";
     }
 
-    // ================= SOUTENANCE (CORRIGÉ) =================
-    @GetMapping("/soutenance/demander") // Changé en GET pour correspondre au lien HTML
+    // ================= SOUTENANCE =================
+    @GetMapping("/soutenance/demander")
     public String demanderSoutenance(Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         Doctorant d = user.getDoctorant();
-
-        // Logique métier : On déclenche la demande via le service
         soutenanceService.demanderSoutenance(d.getId());
 
         System.out.println("🔥 Demande de soutenance enregistrée pour : " + d.getUser().getNom());

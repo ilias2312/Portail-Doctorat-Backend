@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <title>Mon Espace Doctorant</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body { background-color: #f4f6f9; }
         .card { border: none; border-radius: 12px; }
         .card-header { border-bottom: 1px solid #eee; font-weight: bold; }
         .avatar { width: 60px; height: 60px; font-size: 22px; border-radius: 50%; background-color: #0d6efd; color: white; display: flex; align-items: center; justify-content: center; margin: auto; }
+        .checklist-item { padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; }
+        .checklist-ok { background-color: #d1e7dd; color: #0a3622; }
+        .checklist-ko { background-color: #f8d7da; color: #58151c; }
+        .doc-row { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:0.5px solid #d3d1c7; border-radius:8px; margin-bottom:8px; background:#fff; }
+        .upload-zone { background:#f8f8f6; border-radius:10px; padding:16px; margin-bottom:14px; border:0.5px solid #d3d1c7; }
+        .upload-zone-blue { background:#f0f5fb; border-radius:10px; padding:16px; margin-bottom:14px; border:0.5px solid #b5d4f4; }
     </style>
 </head>
 <body>
@@ -24,103 +31,323 @@
 
 <div class="container">
     <div class="row">
-        <!-- PROFILE -->
+
+        <!-- COLONNE GAUCHE : PROFIL + STATUT DOSSIER -->
         <div class="col-md-4">
+
+            <!-- PROFIL -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body text-center">
                     <div class="avatar mb-2" th:text="${d.user.prenom.substring(0,1)}"></div>
                     <h5 class="fw-bold" th:text="${d.user.prenom + ' ' + d.user.nom}"></h5>
-                    <p class="text-muted" th:text="${d.user.email}"></p>
+                    <p class="text-muted small" th:text="${d.user.email}"></p>
                     <hr>
                     <div class="text-start">
                         <small class="text-secondary">Sujet de thèse :</small>
                         <p class="fw-bold" th:text="${d.sujetThese}"></p>
-                        <small class="text-secondary">Statut :</small>
+                        <small class="text-secondary">Date d'inscription :</small>
+                        <p th:text="${d.dateInscriptionInitiale != null ? d.dateInscriptionInitiale : 'Non définie'}"></p>
+                        <small class="text-secondary">Statut dossier :</small>
                         <p>
-                            <span class="badge" th:text="${d.statut}"
-                                  th:classappend="${d.statut.name() == 'VALID'} ? 'bg-success' : (${d.statut.name() == 'EN_ATTENTE'} ? 'bg-warning text-dark' : 'bg-danger')">
+                            <span class="badge fs-6"
+                                  th:classappend="${d.statut != null and (d.statut.name() == 'VALIDE' or d.statut.name() == 'VALIDE_ADMIN')} ? 'bg-success' :
+                                                 (${d.statut != null and d.statut.name() == 'REJETE'} ? 'bg-danger' :
+                                                 (${d.statut != null and d.statut.name() == 'EN_ATTENTE_DIRECTEUR'} ? 'bg-warning text-dark' :
+                                                 (${d.statut != null and d.statut.name() == 'EN_ATTENTE_ADMIN'} ? 'bg-info text-dark' : 'bg-secondary')))"
+                                  th:text="${d.statut != null ? d.statut : 'N/A'}">
                             </span>
                         </p>
                     </div>
                 </div>
             </div>
+
+            <!-- SUIVI EN TEMPS RÉEL -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <i class="bi bi-diagram-3 me-2"></i>Suivi de mon dossier
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-center mb-3">
+                            <span class="badge bg-success me-2">1</span>
+                            <span>Soumission dossier</span>
+                            <i class="bi bi-check-circle-fill text-success ms-auto"></i>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <span class="badge bg-secondary me-2">2</span>
+                            <span>Avis Directeur de Thèse</span>
+                            <i class="bi ms-auto"
+                               th:classappend="${d.statut != null and (d.statut.name() == 'EN_ATTENTE_ADMIN' or d.statut.name() == 'VALIDE_ADMIN' or d.statut.name() == 'VALIDE')} ? 'bi-check-circle-fill text-success' :
+                                              (${d.statut != null and d.statut.name() == 'REJETE_DIRECTEUR'} ? 'bi-x-circle-fill text-danger' : 'bi-hourglass-split text-warning')"></i>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <span class="badge bg-secondary me-2">3</span>
+                            <span>Validation Administrative</span>
+                            <i class="bi ms-auto"
+                               th:classappend="${d.statut != null and (d.statut.name() == 'VALIDE_ADMIN' or d.statut.name() == 'VALIDE')} ? 'bi-check-circle-fill text-success' :
+                                              (${d.statut != null and d.statut.name() == 'REJETE'} ? 'bi-x-circle-fill text-danger' : 'bi-hourglass-split text-muted')"></i>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <span class="badge bg-secondary me-2">4</span>
+                            <span>Inscription confirmée</span>
+                            <i class="bi ms-auto"
+                               th:classappend="${d.statut != null and d.statut.name() == 'VALIDE'} ? 'bi-check-circle-fill text-success' : 'bi-hourglass-split text-muted'"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
         </div>
 
-        <!-- DASHBOARD -->
+        <!-- COLONNE DROITE -->
         <div class="col-md-8">
-            <!-- SOUTENANCE -->
-            <div class="card shadow-sm mb-4 border-success">
-                <div class="card-body text-center">
-                    <h5 class="text-success mb-3">🎓 Soutenance</h5>
-                    <p class="text-muted">200h de formation + 2 publications minimum</p>
 
-                    <!-- BOUTON DE DEMANDE -->
-                    <a th:if="${d.totalHeuresFormation >= 200 and d.publications.size() >= 2}"
-                       th:href="@{/doctorant/soutenance/demander}"
-                       class="btn btn-success btn-lg">
-                        📩 Demander soutenance
-                    </a>
-
-                    <div th:if="${d.totalHeuresFormation < 200 or d.publications.size() < 2}" class="text-danger mt-2">
-                        ❌ Vous n’êtes pas encore éligible
+            <!-- CHECK-LIST PRÉREQUIS SOUTENANCE -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <i class="bi bi-clipboard-check me-2"></i>Check-list Prérequis Soutenance
+                </div>
+                <div class="card-body">
+                    <div class="checklist-item"
+                         th:classappend="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size() >= 2} ? 'checklist-ok' : 'checklist-ko'">
+                        <i class="bi me-2"
+                           th:classappend="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size() >= 2} ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                        <strong>Articles journaux Q1/Q2 :</strong>
+                        <span th:text="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size()} + ' / 2 requis'"></span>
+                    </div>
+                    <div class="checklist-item"
+                         th:classappend="${d.publications.?[type == 'CONFERENCE'].size() >= 2} ? 'checklist-ok' : 'checklist-ko'">
+                        <i class="bi me-2"
+                           th:classappend="${d.publications.?[type == 'CONFERENCE'].size() >= 2} ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                        <strong>Conférences :</strong>
+                        <span th:text="${d.publications.?[type == 'CONFERENCE'].size()} + ' / 2 requises'"></span>
+                    </div>
+                    <div class="checklist-item"
+                         th:classappend="${d.totalHeuresFormation >= 200} ? 'checklist-ok' : 'checklist-ko'">
+                        <i class="bi me-2"
+                           th:classappend="${d.totalHeuresFormation >= 200} ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                        <strong>Formation doctorale :</strong>
+                        <span th:text="${d.totalHeuresFormation} + ' / 200h requises'"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- ÉTAT D'AVANCEMENT (CORRIGÉ POUR ÉVITER ERREUR 500) -->
+            <!-- ÉTAT D'AVANCEMENT -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header text-primary">État d'avancement</div>
+                <div class="card-header bg-white text-primary">
+                    <i class="bi bi-bar-chart-line me-2"></i>État d'avancement
+                </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-4 border-end">
-                            <h6>Articles</h6>
-                            <!-- Suppression de .name() car 'type' est une String -->
-                            <p class="fw-bold" th:text="${d.publications.?[type == 'JOURNAL'].size()} + ' / 2'"></p>
+                            <h6>Articles Q1/Q2</h6>
+                            <p class="fw-bold fs-4"
+                               th:classappend="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size() >= 2} ? 'text-success' : 'text-danger'"
+                               th:text="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size()} + ' / 2'"></p>
                         </div>
                         <div class="col-4 border-end">
                             <h6>Conférences</h6>
-                            <!-- Suppression de .name() car 'type' est une String -->
-                            <p class="fw-bold" th:text="${d.publications.?[type == 'CONFERENCE'].size()} + ' / 2'"></p>
+                            <p class="fw-bold fs-4"
+                               th:classappend="${d.publications.?[type == 'CONFERENCE'].size() >= 2} ? 'text-success' : 'text-danger'"
+                               th:text="${d.publications.?[type == 'CONFERENCE'].size()} + ' / 2'"></p>
                         </div>
                         <div class="col-4">
                             <h6>Formation</h6>
-                            <p class="fw-bold" th:text="${d.totalHeuresFormation + ' / 200h'}"></p>
+                            <p class="fw-bold fs-4"
+                               th:classappend="${d.totalHeuresFormation >= 200} ? 'text-success' : 'text-danger'"
+                               th:text="${d.totalHeuresFormation + ' / 200h'}"></p>
                         </div>
                     </div>
-                    <div class="progress mt-4" style="height: 18px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                             th:style="'width:' + (${d.totalHeuresFormation} * 100 / 200) + '%'">
+                    <div class="progress mt-3" style="height: 18px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             th:classappend="${d.totalHeuresFormation >= 200} ? 'bg-success' : 'bg-warning'"
+                             th:style="'width:' + ${d.totalHeuresFormation > 200 ? 100 : d.totalHeuresFormation * 100 / 200} + '%'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOUTENANCE -->
+            <div class="card shadow-sm mb-4 border-success">
+                <div class="card-header bg-white text-success">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Soutenance
+                </div>
+                <div class="card-body">
+                    <div th:if="${d.soutenance != null}">
+                        <div class="alert alert-info">
+                            <strong>Statut :</strong>
+                            <span class="badge bg-info text-dark ms-2" th:text="${d.soutenance.statut}"></span>
+                        </div>
+                        <div th:if="${d.soutenance.dateSoutenance != null}" class="mb-2">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <strong>Date :</strong> <span th:text="${d.soutenance.dateSoutenance}"></span>
+                        </div>
+                        <div th:if="${d.soutenance.salle != null}" class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <strong>Salle :</strong> <span th:text="${d.soutenance.salle}"></span>
+                        </div>
+                        <div th:if="${d.soutenance.propositionJury != null}" class="mb-2">
+                            <i class="bi bi-people me-2"></i>
+                            <strong>Jury proposé :</strong> <span th:text="${d.soutenance.propositionJury}"></span>
+                        </div>
+                    </div>
+                    <div th:if="${d.soutenance == null}" class="text-center">
+                        <p class="text-muted mb-3">200h de formation + 2 articles Q1/Q2 + 2 conférences requis</p>
+                        <a th:if="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size() >= 2
+                                   and d.publications.?[type == 'CONFERENCE'].size() >= 2
+                                   and d.totalHeuresFormation >= 200}"
+                           th:href="@{/doctorant/soutenance/demander}"
+                           class="btn btn-success btn-lg">
+                            <i class="bi bi-send me-2"></i>Demander soutenance
+                        </a>
+                        <div th:if="${d.publications.?[type == 'JOURNAL' and (rang == 'Q1' or rang == 'Q2')].size() < 2
+                                     or d.publications.?[type == 'CONFERENCE'].size() < 2
+                                     or d.totalHeuresFormation < 200}"
+                             class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Vous n'êtes pas encore éligible à la soutenance. Complétez les prérequis ci-dessus.
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- PUBLICATIONS -->
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Mes publications</span>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-journal-richtext me-2"></i>Mes publications</span>
                     <a th:href="@{/doctorant/publication/add}" class="btn btn-primary btn-sm">+ Ajouter</a>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
-                        <tr><th>Titre</th><th>Type</th><th>Rang</th></tr>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Type</th>
+                            <th>Rang</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <tr th:each="p : ${d.publications}">
                             <td th:text="${p.titre}"></td>
-                            <td><span class="badge bg-info text-dark" th:text="${p.type}"></span></td>
-                            <td th:text="${p.rang}"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${p.type == 'JOURNAL'} ? 'bg-primary' : 'bg-info text-dark'"
+                                      th:text="${p.type}"></span>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${p.rang == 'Q1' or p.rang == 'Q2'} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${p.rang != null ? p.rang : '-'}"></span>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(d.publications)}">
-                            <td colspan="3" class="text-center p-4 text-muted">📄 Aucune publication</td>
+                            <td colspan="3" class="text-center p-4 text-muted">
+                                <i class="bi bi-journal-x me-2"></i>Aucune publication enregistrée
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- ========== DOCUMENTS (NOUVEAU) ========== -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-folder2-open me-2"></i>Mes documents</span>
+                </div>
+                <div class="card-body">
+
+                    <!-- Alertes -->
+                    <div th:if="${param.uploadOk}" class="alert alert-success py-2">
+                        <i class="bi bi-check-circle-fill me-2"></i>Fichier déposé avec succès.
+                    </div>
+                    <div th:if="${param.erreurUpload}" class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>Erreur lors du dépôt. Vérifiez le format du fichier.
+                    </div>
+
+                    <!-- Upload pièce justificative -->
+                    <div class="upload-zone">
+                        <p class="text-uppercase fw-bold small text-secondary mb-3" style="letter-spacing:.05em;">
+                            Déposer une pièce justificative
+                        </p>
+                        <form th:action="@{/doctorant/document/upload}" method="post" enctype="multipart/form-data"
+                              class="d-flex gap-2 align-items-end flex-wrap">
+                            <input type="hidden" name="type" value="PIECE_JUSTIFICATIVE">
+                            <div class="flex-grow-1">
+                                <label class="form-label small text-muted mb-1">Fichier (PDF, JPG, PNG)</label>
+                                <input type="file" name="fichier" accept=".pdf,.jpg,.jpeg,.png"
+                                       required class="form-control form-control-sm">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-upload me-1"></i>Déposer
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Upload manuscrit -->
+                    <div class="upload-zone-blue">
+                        <p class="text-uppercase fw-bold small mb-3" style="letter-spacing:.05em; color:#0C447C;">
+                            <i class="bi bi-book me-1"></i>Dépôt du manuscrit de thèse
+                        </p>
+                        <form th:action="@{/doctorant/manuscrit/upload}" method="post" enctype="multipart/form-data"
+                              class="d-flex gap-2 align-items-end flex-wrap">
+                            <div class="flex-grow-1">
+                                <label class="form-label small text-muted mb-1">Manuscrit (PDF uniquement)</label>
+                                <input type="file" name="fichier" accept=".pdf"
+                                       required class="form-control form-control-sm">
+                            </div>
+                            <button type="submit" class="btn btn-sm" style="background:#0C447C; color:#fff;">
+                                <i class="bi bi-upload me-1"></i>Déposer le manuscrit
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Liste documents déposés -->
+                    <div th:if="${documents != null and !#lists.isEmpty(documents)}">
+                        <p class="text-uppercase fw-bold small text-secondary mb-2" style="letter-spacing:.05em;">
+                            Documents déposés
+                        </p>
+                        <div th:each="doc : ${documents}" class="doc-row">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-pdf text-danger fs-5"
+                                   th:if="${doc.contentType != null and doc.contentType.contains('pdf')}"></i>
+                                <i class="bi bi-file-earmark-image text-primary fs-5"
+                                   th:unless="${doc.contentType != null and doc.contentType.contains('pdf')}"></i>
+                                <div>
+                                    <div class="fw-500 small" th:text="${doc.nom}">fichier.pdf</div>
+                                    <div class="text-muted" style="font-size:11px;"
+                                         th:text="${doc.type.name() == 'MANUSCRIT' ? 'Manuscrit de thèse' : 'Pièce justificative'}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/document/telecharger/{id}(id=${doc.id})}"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <a th:href="@{/doctorant/document/supprimer/{id}(id=${doc.id})}"
+                                   onclick="return confirm('Supprimer ce document ?')"
+                                   class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${documents == null or #lists.isEmpty(documents)}"
+                         class="text-center py-3 text-muted small">
+                        <i class="bi bi-folder2 fs-4 d-block mb-2"></i>
+                        Aucun document déposé pour le moment.
+                    </div>
+
+                </div>
+            </div>
+            <!-- ========== FIN DOCUMENTS ========== -->
+
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -24,7 +24,10 @@ spring:
 server:
   port: 8080
 
-# Ajout du mode DEBUG pour voir l'erreur de connexion précise
+# ✅ Added upload directory config
+upload:
+  dir: uploads
+
 logging:
   level:
     org:

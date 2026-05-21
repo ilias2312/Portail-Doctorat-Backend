@@ -41,7 +41,20 @@
 
                 <div class="mb-3">
                     <label class="fw-bold mb-1">Sujet de Thèse</label>
-                    <textarea th:field="*{sujetThese}" class="form-control" rows="3" placeholder="Décrivez le sujet de recherche..." required></textarea>
+                    <textarea th:field="*{sujetThese}" class="form-control" rows="3"
+                              placeholder="Décrivez le sujet de recherche..." required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold mb-1">Encadrant</label>
+                    <select class="form-select" name="encadrant.id">
+                        <option value="">-- Choisir un encadrant --</option>
+                        <option th:each="enc : ${encadrants}"
+                                th:value="${enc.id}"
+                                th:text="${enc.nom + ' ' + enc.prenom}"
+                                th:selected="${doctorant.encadrant != null and doctorant.encadrant.id == enc.id}">
+                        </option>
+                    </select>
                 </div>
 
                 <div class="row mb-3" th:if="${doctorant.id != null}">

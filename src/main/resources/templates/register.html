@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion | Portail Doctorat EMSI</title>
+    <title>Inscription | Portail Doctorat EMSI</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,7 +70,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 40px 36px;
+            padding: 36px 36px;
         }
 
         .form-eyebrow {
@@ -78,9 +78,12 @@
             letter-spacing: .1em; color: #888780; margin-bottom: 6px;
         }
         .form-title { font-size: 22px; font-weight: 600; color: #2c2c2a; margin-bottom: 4px; }
-        .form-sub { font-size: 12px; color: #5f5e5a; line-height: 1.6; margin-bottom: 28px; }
+        .form-sub { font-size: 12px; color: #5f5e5a; line-height: 1.6; margin-bottom: 22px; }
 
-        .field { margin-bottom: 16px; }
+        .fields-row { display: flex; gap: 12px; }
+        .fields-row .field { flex: 1; }
+
+        .field { margin-bottom: 14px; }
         .field-label {
             display: block; font-size: 11px; font-weight: 600;
             color: #5f5e5a; text-transform: uppercase;
@@ -116,7 +119,7 @@
         .toggle-pw i { font-size: 15px; }
 
         .submit-btn {
-            width: 100%; margin-top: 8px;
+            width: 100%; margin-top: 6px;
             display: flex; align-items: center; justify-content: center; gap: 7px;
             padding: 10px; font-size: 13px; font-weight: 600;
             background: #185FA5; color: #fff;
@@ -129,34 +132,30 @@
         .error-box {
             display: flex; align-items: center; gap: 8px;
             background: #FCEBEB; border-radius: 8px;
-            padding: 9px 12px; margin-bottom: 16px;
+            padding: 9px 12px; margin-bottom: 14px;
         }
         .error-box i { font-size: 14px; color: #A32D2D; flex-shrink: 0; }
         .error-box span { font-size: 12px; color: #A32D2D; }
 
-        .success-box {
-            display: flex; align-items: center; gap: 8px;
-            background: #EAF3DE; border-radius: 8px;
-            padding: 9px 12px; margin-bottom: 16px;
-        }
-        .success-box i { font-size: 14px; color: #3B6D11; flex-shrink: 0; }
-        .success-box span { font-size: 12px; color: #3B6D11; }
-
         .form-footer {
-            margin-top: 20px; padding-top: 16px;
+            margin-top: 18px; padding-top: 14px;
             border-top: 0.5px solid #d3d1c7;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: center; gap: 20px;
         }
         .back-link {
             display: flex; align-items: center; gap: 5px;
             font-size: 12px; color: #888780; text-decoration: none;
         }
         .back-link:hover { color: #2c2c2a; }
-        .register-link {
+        .login-link {
             display: flex; align-items: center; gap: 5px;
             font-size: 12px; color: #185FA5; text-decoration: none; font-weight: 500;
         }
-        .register-link:hover { color: #0C447C; }
+        .login-link:hover { color: #0C447C; }
+
+        .pw-hint {
+            font-size: 11px; color: #888780; margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -173,25 +172,25 @@
                 <span class="left-logo-name">EMSI</span>
             </div>
 
-            <p class="left-headline">Portail de suivi doctoral</p>
-            <p class="left-sub">Gérez votre parcours de recherche, publications et soutenance en un seul espace.</p>
+            <p class="left-headline">Rejoignez le portail doctoral</p>
+            <p class="left-sub">Créez votre compte candidat pour soumettre votre dossier d'inscription au doctorat.</p>
 
             <div class="left-steps">
                 <div class="lstep">
-                    <div class="lstep-dot"><i class="bi bi-file-text"></i></div>
-                    <span class="lstep-txt">Suivi de dossier en temps réel</span>
+                    <div class="lstep-dot"><i class="bi bi-person-plus"></i></div>
+                    <span class="lstep-txt">Créez votre compte</span>
                 </div>
                 <div class="lstep">
-                    <div class="lstep-dot"><i class="bi bi-journal-richtext"></i></div>
-                    <span class="lstep-txt">Gestion des publications</span>
+                    <div class="lstep-dot"><i class="bi bi-file-earmark-text"></i></div>
+                    <span class="lstep-txt">Soumettez votre dossier</span>
+                </div>
+                <div class="lstep">
+                    <div class="lstep-dot"><i class="bi bi-hourglass-split"></i></div>
+                    <span class="lstep-txt">Suivez la validation en temps réel</span>
                 </div>
                 <div class="lstep">
                     <div class="lstep-dot"><i class="bi bi-award"></i></div>
-                    <span class="lstep-txt">Demande de soutenance</span>
-                </div>
-                <div class="lstep">
-                    <div class="lstep-dot"><i class="bi bi-people"></i></div>
-                    <span class="lstep-txt">Interface encadrant intégrée</span>
+                    <span class="lstep-txt">Préparez votre soutenance</span>
                 </div>
             </div>
         </div>
@@ -202,36 +201,46 @@
     <!-- PANNEAU DROIT -->
     <div class="right-panel">
 
-        <p class="form-eyebrow">Authentification</p>
-        <h1 class="form-title">Connexion</h1>
-        <p class="form-sub">Identifiez-vous pour accéder à votre espace de suivi doctoral.</p>
+        <p class="form-eyebrow">Nouveau compte</p>
+        <h1 class="form-title">Inscription candidat</h1>
+        <p class="form-sub">Remplissez le formulaire ci-dessous. Votre dossier sera examiné par l'administration.</p>
 
-        <!-- Erreur identifiants -->
-        <div class="error-box" th:if="${param.error}">
+        <!-- Erreur email déjà utilisé -->
+        <div class="error-box" th:if="${erreur}">
             <i class="bi bi-exclamation-circle-fill"></i>
-            <span>Email ou mot de passe incorrect. Veuillez réessayer.</span>
+            <span th:text="${erreur}">Une erreur s'est produite.</span>
         </div>
 
-        <!-- Déconnexion réussie -->
-        <div class="success-box" th:if="${param.logout}">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Vous avez été déconnecté avec succès.</span>
-        </div>
+        <form th:action="@{/register}" method="post">
 
-        <!-- Compte créé avec succès -->
-        <div class="success-box" th:if="${param.registered}">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Compte créé avec succès ! Vous pouvez maintenant vous connecter.</span>
-        </div>
-
-        <form th:action="@{/login}" method="post">
+            <div class="fields-row">
+                <div class="field">
+                    <label class="field-label" for="nom">Nom</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-person field-icon"></i>
+                        <input type="text" id="nom" name="nom"
+                               placeholder="Benali" required autocomplete="family-name"
+                               th:value="${param.nom}">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="prenom">Prénom</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-person field-icon"></i>
+                        <input type="text" id="prenom" name="prenom"
+                               placeholder="Ahmed" required autocomplete="given-name"
+                               th:value="${param.prenom}">
+                    </div>
+                </div>
+            </div>
 
             <div class="field">
                 <label class="field-label" for="email">Adresse email</label>
                 <div class="field-wrap">
                     <i class="bi bi-envelope field-icon"></i>
                     <input type="email" id="email" name="email"
-                           placeholder="nom@emsi.ma" required autocomplete="email">
+                           placeholder="nom@emsi.ma" required autocomplete="email"
+                           th:value="${param.email}">
                 </div>
             </div>
 
@@ -240,17 +249,31 @@
                 <div class="field-wrap">
                     <i class="bi bi-lock field-icon"></i>
                     <input type="password" id="password" name="password"
-                           placeholder="••••••••" required autocomplete="current-password">
+                           placeholder="••••••••" required autocomplete="new-password" minlength="6">
                     <button class="toggle-pw" type="button"
                             onclick="togglePw()" aria-label="Afficher/masquer le mot de passe">
                         <i class="bi bi-eye" id="pw-icon"></i>
                     </button>
                 </div>
+                <p class="pw-hint">Minimum 6 caractères</p>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="confirmPassword">Confirmer le mot de passe</label>
+                <div class="field-wrap">
+                    <i class="bi bi-lock-fill field-icon"></i>
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                           placeholder="••••••••" required autocomplete="new-password">
+                    <button class="toggle-pw" type="button"
+                            onclick="toggleConfirm()" aria-label="Afficher/masquer la confirmation">
+                        <i class="bi bi-eye" id="confirm-icon"></i>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="submit-btn">
-                <i class="bi bi-box-arrow-in-right"></i>
-                Se connecter
+                <i class="bi bi-person-check"></i>
+                Créer mon compte
             </button>
 
         </form>
@@ -258,11 +281,11 @@
         <div class="form-footer">
             <a href="/" class="back-link">
                 <i class="bi bi-arrow-left"></i>
-                Retour à l'accueil
+                Accueil
             </a>
-            <a href="/register" class="register-link">
-                <i class="bi bi-person-plus"></i>
-                Créer un compte
+            <a href="/login" class="login-link">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Déjà un compte ? Se connecter
             </a>
         </div>
 
@@ -273,14 +296,25 @@
     function togglePw() {
         var inp = document.getElementById('password');
         var ico = document.getElementById('pw-icon');
-        if (inp.type === 'password') {
-            inp.type = 'text';
-            ico.className = 'bi bi-eye-slash';
-        } else {
-            inp.type = 'password';
-            ico.className = 'bi bi-eye';
-        }
+        if (inp.type === 'password') { inp.type = 'text'; ico.className = 'bi bi-eye-slash'; }
+        else { inp.type = 'password'; ico.className = 'bi bi-eye'; }
     }
+    function toggleConfirm() {
+        var inp = document.getElementById('confirmPassword');
+        var ico = document.getElementById('confirm-icon');
+        if (inp.type === 'password') { inp.type = 'text'; ico.className = 'bi bi-eye-slash'; }
+        else { inp.type = 'password'; ico.className = 'bi bi-eye'; }
+    }
+
+    // Validation côté client : mots de passe identiques
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var pw = document.getElementById('password').value;
+        var cpw = document.getElementById('confirmPassword').value;
+        if (pw !== cpw) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas.');
+        }
+    });
 </script>
 
 </body>
